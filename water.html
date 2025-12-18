@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Water Tank Problem</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        padding: 20px;
+    }
+
+    h2 {
+        text-align: center;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    button:hover {
+        background: #0056b3;
+    }
+
+    #result {
+        margin-top: 15px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    svg {
+        margin-top: 20px;
+        border: 1px solid #ddd;
+        background: #fafafa;
+    }
+
+    .block {
+        fill: #444;
+    }
+
+    .water {
+        fill: rgba(0, 123, 255, 0.6);
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Water Tank (Trapping Rain Water) Problem</h2>
+
+    <label>Enter block heights (comma separated):</label>
+    <input id="input" value="0,4,0,0,0,6,0,6,4,0">
+
+    <button onclick="draw()">Calculate & Visualize</button>
+
+    <div id="result"></div>
+
+    <svg id="svg" width="800" height="300"></svg>
+</div>
+
+<script>
+function trapWaterWithDetails(height) {
+    let left = 0, right = height.length - 1;
+    let leftMax = 0, rightMax = 0;
+    let water = 0;
+    let waterArr = new Array(height.length).fill(0);
+
+    while (left < right) {
+        if (height[left] < height[right]) {
+            if (height[left] >= leftMax) {
+                leftMax = height[left];
+            } else {
+                waterArr[left] = leftMax - height[left];
+                water += waterArr[left];
+            }
+            left++;
+        } else {
+            if (height[right] >= rightMax) {
+                rightMax = height[right];
+            } else {
+                waterArr[right] = rightMax - height[right];
+                water += waterArr[right];
+            }
+            right--;
+        }
+    }
+    return { total: water, waterArr };
+}
+
+function draw() {
+    const svg = document.getElementById("svg");
+    svg.innerHTML = "";
+
+    const heights = document.getElementById("input")
+        .value.split(",")
+        .map(x => Math.max(0, parseInt(x.trim())));
+
+    const { total, waterArr } = trapWaterWithDetails(heights);
+
+    document.getElementById("result").innerText =
+        "Total Trapped Water = " + total + " units";
+
+    const width = svg.clientWidth;
+    const heightSvg = svg.clientHeight;
+
+    const barWidth = width / heights.length;
+    const maxHeight = Math.max(...heights) + Math.max(...waterArr);
+
+    for (let i = 0; i < heights.length; i++) {
+        // Block
+        let blockHeight = (heights[i] / maxHeight) * (heightSvg - 20);
+        let block = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        block.setAttribute("x", i * barWidth);
+        block.setAttribute("y", heightSvg - blockHeight);
+        block.setAttribute("width", barWidth - 2);
+        block.setAttribute("height", blockHeight);
+        block.setAttribute("class", "block");
+        svg.appendChild(block);
+
+        // Water
+        if (waterArr[i] > 0) {
+            let waterHeight = (waterArr[i] / maxHeight) * (heightSvg - 20);
+            let waterRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            waterRect.setAttribute("x", i * barWidth);
+            waterRect.setAttribute("y", heightSvg - blockHeight - waterHeight);
+            waterRect.setAttribute("width", barWidth - 2);
+            waterRect.setAttribute("height", waterHeight);
+            waterRect.setAttribute("class", "water");
+            svg.appendChild(waterRect);
+        }
+    }
+}
+
+// Initial draw
+draw();
+</script>
+
+</body>
+</html>
